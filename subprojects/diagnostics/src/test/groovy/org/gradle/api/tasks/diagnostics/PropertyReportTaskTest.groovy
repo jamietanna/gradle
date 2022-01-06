@@ -57,4 +57,36 @@ class PropertyReportTaskTest extends Specification {
         1 * renderer.addProperty("prop", "value")
         1 * renderer.addProperty("properties", "{...}")
     }
+
+    def "when a specific property is requested, only that property is requested"() {
+        when:
+        task.setProperty("prop")
+        task.generate(project)
+
+        then:
+        1 * project.properties >> ["prop": "value", "properties": "prop"]
+        1 * renderer.addProperty("prop", "value")
+        0 * renderer.addProperty("properties", "{...}")
+    }
+
+    def "does not show contents of the properties property when requested"() {
+        when:
+        task.setProperty("properties")
+        task.generate(project)
+
+        then:
+        1 * project.properties >> ["prop": "value", "properties": "prop"]
+        1 * renderer.addProperty("properties", "{...}")
+    }
+
+
+    def "when a specific property is requested, but isn't found"() {
+        when:
+        task.setProperty("not-found")
+        task.generate(project)
+
+        then:
+        1 * project.properties >> ["properties": "prop"]
+        1 * renderer.addProperty("not-found", null)
+    }
 }
